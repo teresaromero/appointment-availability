@@ -1,11 +1,18 @@
 package main
 
 import (
+	"appointment-availability/bot"
 	hla "appointment-availability/services"
+	"context"
 	"log"
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	tgBot := bot.New()
+
 	hlaService := hla.NewHLA()
 	user, err := hlaService.Login()
 	if err != nil {
@@ -24,4 +31,7 @@ func main() {
 			msg += "\n" + a.DateTime + " " + a.FormatName + " " + a.DoctorName + " " + a.LocationName + " " + a.ConsultationName
 		}
 	}
+
+	// Send message to telegram
+	tgBot.SendNotification(ctx, msg)
 }
