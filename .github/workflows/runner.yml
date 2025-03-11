@@ -1,12 +1,8 @@
 name: Run Service Every Day
 
 on:
-  # debug push
-  push:
-    branches:
-      - main
-  # schedule:
-  #   - cron: "0 9 * * *" # 10 AM Madrid time (CET/UTC+1) equivalent in UTC
+  schedule:
+    - cron: "0 9 * * *" # 10 AM Madrid time (CET/UTC+1) equivalent in UTC
   workflow_dispatch:
 
 jobs:
