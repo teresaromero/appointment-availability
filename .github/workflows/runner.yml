@@ -1,8 +1,12 @@
 name: Run Service Every Day
 
 on:
-  schedule:
-    - cron: "0 9 * * *" # 10 AM Madrid time (CET/UTC+1) equivalent in UTC
+  # debug push
+  push:
+    branches:
+      - main
+  # schedule:
+  #   - cron: "0 9 * * *" # 10 AM Madrid time (CET/UTC+1) equivalent in UTC
   workflow_dispatch:
 
 jobs:
@@ -11,9 +15,6 @@ jobs:
     environment:
       name: production
     steps:
-      - name: Pull Docker Image
-        run: docker pull teresaromero/appointment-availability:1.0
-
       - name: Run Docker Container
         run: |
           docker run \
@@ -27,4 +28,4 @@ jobs:
             --env HLA_PASSWORD=${{secrets.HLA_PASSWORD}} \
             --env TG_BOT_APIKEY=${{secrets.TG_BOT_APIKEY}} \
             --env TG_BOT_MASTERID=${{secrets.TG_BOT_MASTERID}} \
-            teresaromero/appointment-availability:1.0
+            teresaromero/appointment-availability:latest
