@@ -178,7 +178,7 @@ func (h *HLA) params() availabilityParams {
 	}
 }
 
-type availabilityResponse struct {
+type Availability struct {
 	AvailabilityID   string `json:"availability_id"`
 	DateTime         string `json:"date_time"`
 	FormatName       string `json:"format_name"`
@@ -188,12 +188,12 @@ type availabilityResponse struct {
 }
 
 // AvailabilityCheck checks if the HLA service is available
-func (h *HLA) AvailabilityCheck(token string) (bool, error) {
+func (h *HLA) AvailabilityCheck(token string) ([]Availability, error) {
 	availabilityURL := h.baseURL + availabilityPath + "?" + h.params().toQueryParams()
 
 	req, err := http.NewRequest("GET", availabilityURL, nil)
 	if err != nil {
-		return false, fmt.Errorf("Error creating request: %v", err)
+		return nil, fmt.Errorf("Error creating request: %v", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
@@ -202,29 +202,29 @@ func (h *HLA) AvailabilityCheck(token string) (bool, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("Error sending request: %v", err)
+		return nil, fmt.Errorf("Error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("Availability check failed: %v", resp.Status)
+		return nil, fmt.Errorf("Availability check failed: %v", resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return false, fmt.Errorf("Error reading response: %v", err)
+		return nil, fmt.Errorf("Error reading response: %v", err)
 	}
 
-	var availability []availabilityResponse
+	var availability []Availability
 	if err = json.Unmarshal(body, &availability); err != nil {
-		return false, fmt.Errorf("Error unmarshalling availability response: %v", err)
+		return nil, fmt.Errorf("Error unmarshalling availability response: %v", err)
 	}
 
 	for _, a := range availability {
 		log.Printf("Availability: %s %s %s %s %s", a.DateTime, a.FormatName, a.DoctorName, a.LocationName, a.ConsultationName)
 	}
 
-	return len(availability) != 0, nil
+	return availability, nil
 }
 
 func mustLoadIntEnvVar(name string) int {
