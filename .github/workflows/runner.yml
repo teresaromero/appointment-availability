@@ -14,17 +14,17 @@ jobs:
       name: production
     steps:
       - name: Run Service
-        env:
-          HLA_PROVINCE_ID: ${ { secrets.HLA_PROVINCE_ID } }
-          HLA_HEALTH_CENTRE_ID: ${ { secrets.HLA_HEALTH_CENTRE_ID } }
-          HLA_AGREEMENT_ID: ${ { secrets.HLA_AGREEMENT_ID } }
-          HLA_BASE_URL: ${ { secrets.HLA_BASE_URL } }
-          HLA_FORMAT_ID: ${ { secrets.HLA_FORMAT_ID } }
-          HLA_SPECIALTY_ID_LIST: ${ { secrets.HLA_SPECIALTY_ID_LIST } }
-          HLA_USERNAME: ${ { secrets.HLA_USERNAME } }
-          HLA_PASSWORD: ${ { secrets.HLA_PASSWORD } }
-          TG_BOT_APIKEY: ${ { secrets.TG_BOT_APIKEY } }
-          TG_BOT_MASTERID: ${ { secrets.TG_BOT_MASTERID } }
+        # env:
+        #   HLA_PROVINCE_ID: ${ { secrets.HLA_PROVINCE_ID } }
+        #   HLA_HEALTH_CENTRE_ID: ${ { secrets.HLA_HEALTH_CENTRE_ID } }
+        #   HLA_AGREEMENT_ID: ${ { secrets.HLA_AGREEMENT_ID } }
+        #   HLA_BASE_URL: ${ { secrets.HLA_BASE_URL } }
+        #   HLA_FORMAT_ID: ${ { secrets.HLA_FORMAT_ID } }
+        #   HLA_SPECIALTY_ID_LIST: ${ { secrets.HLA_SPECIALTY_ID_LIST } }
+        #   HLA_USERNAME: ${ { secrets.HLA_USERNAME } }
+        #   HLA_PASSWORD: ${ { secrets.HLA_PASSWORD } }
+        #   TG_BOT_APIKEY: ${ { secrets.TG_BOT_APIKEY } }
+        #   TG_BOT_MASTERID: ${ { secrets.TG_BOT_MASTERID } }
         run: |
-          echo "Starting service..."
-          ./checker
+          ls -la
+          "./checker"
