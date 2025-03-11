@@ -5,6 +5,10 @@ import (
 	hla "appointment-availability/services"
 	"context"
 	"log"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
 func main() {
@@ -19,19 +23,35 @@ func main() {
 		log.Fatalf("Error logging in: %v", err)
 	}
 
-	avail, err := hlaService.AvailabilityCheck(user.Token)
-	if err != nil {
-		log.Fatalf("Error checking availability: %v", err)
+	specialtyIDList := os.Getenv("HLA_SPECIALTY_ID_LIST")
+	if specialtyIDList == "" {
+		log.Fatalf("HLA_SPECIALTY_ID_LIST is required")
 	}
 
-	msg := "No appointment available"
-	if avail != nil {
-		msg = "Appointment available"
-		for _, a := range avail {
-			msg += "\n" + a.DateTime + " " + a.FormatName + " " + a.DoctorName + " " + a.LocationName + " " + a.ConsultationName
+	// Check availability for each specialty
+	for s := range strings.SplitSeq(specialtyIDList, ",") {
+		// wait for each request to avoid rate limiting
+		time.Sleep(5 * time.Second)
+
+		specialtyId, err := strconv.Atoi(s)
+		if err != nil {
+			log.Fatalf("Error converting specialty ID: %v", err)
 		}
-	}
 
-	// Send message to telegram
-	tgBot.SendNotification(ctx, msg)
+		avail, err := hlaService.AvailabilityCheck(user.Token, specialtyId)
+		if err != nil {
+			log.Fatalf("Error checking availability: %v", err)
+		}
+
+		msg := "No appointment available for specialty ID: " + s
+		if len(avail) > 0 {
+			msg = "Appointment available for specialty ID: " + s
+			for _, a := range avail {
+				msg += "\n" + a.DateTime + " " + a.FormatName + " " + a.DoctorName + " " + a.LocationName + " " + a.ConsultationName
+			}
+		}
+
+		// Send message to telegram
+		tgBot.SendNotification(ctx, msg)
+	}
 }

@@ -31,11 +31,10 @@ type HLA struct {
 	baseURL        string
 	provinceID     int
 	healthCentreID int
-	doctorID       int
-	specialtyID    int
 	agreementID    int
 	formatID       int
-	initialDate    string
+	// api returns the first 3 dates from this date
+	initialDate string
 }
 
 func NewHLA() *HLA {
@@ -45,7 +44,6 @@ func NewHLA() *HLA {
 	}
 	provinceID := mustLoadIntEnvVar("HLA_PROVINCE_ID")
 	healthCentreID := mustLoadIntEnvVar("HLA_HEALTH_CENTRE_ID")
-	specialtyID := mustLoadIntEnvVar("HLA_SPECIALTY_ID")
 	agreementID := mustLoadIntEnvVar("HLA_AGREEMENT_ID")
 	formatID := mustLoadIntEnvVar("HLA_FORMAT_ID")
 
@@ -53,16 +51,11 @@ func NewHLA() *HLA {
 		baseURL:        baseURL,
 		provinceID:     provinceID,
 		healthCentreID: healthCentreID,
-		specialtyID:    specialtyID,
 		agreementID:    agreementID,
 		formatID:       formatID,
 	}
 
-	// doctorID is optional
-	if doctorID := loadIntEnvVar("HLA_DOCTOR_ID"); doctorID != 0 {
-		hla.doctorID = doctorID
-	}
-	// initialDate is optional
+	// initialDate is optional, defaults to today
 	if initialDate := os.Getenv("HLA_INITIAL_DATE"); initialDate != "" {
 		hla.initialDate = initialDate
 	} else {
@@ -139,7 +132,6 @@ type availabilityParams struct {
 	AgreementID    int    `json:"agreement_id"`
 	ProvinceID     int    `json:"province_id"`
 	HealthCentreID int    `json:"health_centre_id"`
-	DoctorID       int    `json:"doctor_id"`
 }
 
 func (p availabilityParams) toQueryParams() string {
@@ -153,9 +145,6 @@ func (p availabilityParams) toQueryParams() string {
 		"province_id":      fmt.Sprintf("%d", p.ProvinceID),
 		"health_centre_id": fmt.Sprintf("%d", p.HealthCentreID),
 	}
-	if p.DoctorID != 0 {
-		qparams["doctor_id"] = fmt.Sprintf("%d", p.DoctorID)
-	}
 	qparamsStr := ""
 	for k, v := range qparams {
 		qparamsStr += fmt.Sprintf("%s=%s&", k, v)
@@ -164,7 +153,7 @@ func (p availabilityParams) toQueryParams() string {
 	return qparamsStr
 }
 
-func (h *HLA) params() availabilityParams {
+func (h *HLA) defaultParams() availabilityParams {
 	return availabilityParams{
 		FormatIDs:      h.formatID,
 		AgreementID:    h.agreementID,
@@ -173,8 +162,6 @@ func (h *HLA) params() availabilityParams {
 		EndTime:        "21:00",
 		ProvinceID:     h.provinceID,
 		HealthCentreID: h.healthCentreID,
-		SpecialtyID:    h.specialtyID,
-		DoctorID:       h.doctorID,
 	}
 }
 
@@ -188,8 +175,11 @@ type Availability struct {
 }
 
 // AvailabilityCheck checks if the HLA service is available
-func (h *HLA) AvailabilityCheck(token string) ([]Availability, error) {
-	availabilityURL := h.baseURL + availabilityPath + "?" + h.params().toQueryParams()
+func (h *HLA) AvailabilityCheck(token string, specialtyID int) ([]Availability, error) {
+	params := h.defaultParams()
+	params.SpecialtyID = specialtyID
+
+	availabilityURL := h.baseURL + availabilityPath + "?" + params.toQueryParams()
 
 	req, err := http.NewRequest("GET", availabilityURL, nil)
 	if err != nil {
@@ -220,10 +210,6 @@ func (h *HLA) AvailabilityCheck(token string) ([]Availability, error) {
 		return nil, fmt.Errorf("Error unmarshalling availability response: %v", err)
 	}
 
-	for _, a := range availability {
-		log.Printf("Availability: %s %s %s %s %s", a.DateTime, a.FormatName, a.DoctorName, a.LocationName, a.ConsultationName)
-	}
-
 	return availability, nil
 }
 
@@ -231,18 +217,6 @@ func mustLoadIntEnvVar(name string) int {
 	value := os.Getenv(name)
 	if value == "" {
 		log.Fatalf("%s is required", name)
-	}
-	intValue, err := strconv.Atoi(value)
-	if err != nil {
-		log.Fatalf("Error parsing %s: %v", name, err)
-	}
-	return intValue
-}
-
-func loadIntEnvVar(name string) int {
-	value := os.Getenv(name)
-	if value == "" {
-		return 0
 	}
 	intValue, err := strconv.Atoi(value)
 	if err != nil {
