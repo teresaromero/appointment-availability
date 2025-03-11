@@ -99,20 +99,22 @@ func (h *HLA) Login() (*HLAUser, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 15 * time.Second,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Login failed: %v", resp.Status)
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading response: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Login failed: %v: %s", resp.Status, string(body))
 	}
 
 	var user *HLAUser
@@ -189,7 +191,9 @@ func (h *HLA) AvailabilityCheck(token string, specialtyID int) ([]Availability, 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("language", "es")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 15 * time.Second,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error sending request: %v", err)
