@@ -2,8 +2,7 @@ name: Run Service Every Day
 
 on:
   schedule:
-   - cron: '*/15 * * * *' # every 15 minutes
- # - cron: "0 9 * * *" # 10 AM Madrid time (CET/UTC+1) equivalent in UTC
+    - cron: "0 9 * * *" # 10 AM Madrid time (CET/UTC+1) equivalent in UTC
 
 jobs:
   run-service:
