@@ -12,7 +12,7 @@ jobs:
       name: production
     steps:
       - name: Pull Docker Image
-        run: docker pull mydockerhubusername/myimagename:latest
+        run: docker pull teresaromero/appointment-availability:1.0
 
       - name: Run Docker Container
         run: |
