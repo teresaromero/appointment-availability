@@ -1,4 +1,4 @@
 *
 !go.mod
-!main.go
-!services/
+!cmd/*
+!internal/*

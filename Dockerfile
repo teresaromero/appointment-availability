@@ -4,7 +4,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o checker .
+RUN go build -o checker cmd/checker/main.go
 
 FROM golang:1.24.0-alpine
 

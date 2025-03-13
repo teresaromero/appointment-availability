@@ -70,3 +70,7 @@ func (a *AppointmentBot) SendNotification(ctx context.Context, message string) {
 		log.Printf("error sending message: %v", err)
 	}
 }
+
+func (a *AppointmentBot) Close(ctx context.Context) (bool, error) {
+	return a.bot.Close(ctx)
+}

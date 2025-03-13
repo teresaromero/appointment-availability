@@ -1,8 +1,8 @@
 package main
 
 import (
-	"appointment-availability/bot"
-	hla "appointment-availability/services"
+	"appointment-availability/internal/bot"
+	hla "appointment-availability/internal/services"
 	"context"
 	"log"
 	"os"
@@ -16,6 +16,7 @@ func main() {
 	defer cancel()
 
 	tgBot := bot.New()
+	defer tgBot.Close(ctx)
 
 	hlaService := hla.NewHLA()
 	user, err := hlaService.Login()
