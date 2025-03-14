@@ -2,7 +2,7 @@ name: Run Service Every Day
 
 on:
   schedule:
-    - cron: "0 9,17 * * *" # 10h and 18h  Madrid time (CET/UTC+1) equivalent in UTC
+    - cron: "0 9,14,17 * * *" # 10h,13h,18h  Madrid time (CET/UTC+1) equivalent in UTC
 
 jobs:
   run-service:
@@ -23,4 +23,5 @@ jobs:
             --env HLA_PASSWORD=${{secrets.HLA_PASSWORD}} \
             --env TG_BOT_APIKEY=${{secrets.TG_BOT_APIKEY}} \
             --env TG_BOT_MASTERID=${{secrets.TG_BOT_MASTERID}} \
+            --env HC_URL=${{secrets.HC_URL}} \
             teresaromero/appointment-availability:latest
