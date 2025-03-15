@@ -6,10 +6,18 @@ RUN go mod download
 COPY . .
 RUN go build -o checker cmd/checker/main.go
 
-FROM golang:1.24.0-alpine
+FROM alpine:3.21.3
 
-RUN apk update && apk add --no-cache ca-certificates
-RUN update-ca-certificates
+RUN apk add --no-cache \
+    chromium \
+    harfbuzz \
+    nss \
+    freetype \
+    ttf-freefont \
+    && rm -rf /var/cache/apk/*
+
+# Set Chrome as default
+ENV CHROME_BIN=/usr/bin/chromium-browser
 
 WORKDIR /app
 COPY --from=builder /app/checker .
