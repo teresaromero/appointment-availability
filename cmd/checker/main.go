@@ -2,65 +2,50 @@ package main
 
 import (
 	"appointment-availability/internal/bot"
-	"appointment-availability/internal/services"
-	hla "appointment-availability/internal/services"
+	"appointment-availability/internal/config"
+	hcservice "appointment-availability/internal/services/hc"
+	hlaservice "appointment-availability/internal/services/hla"
 	"context"
 	"log"
-	"os"
-	"strconv"
-	"strings"
+	"net/http"
 	"time"
 )
 
 func main() {
+
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Error loading config: %v", err)
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	tgBot := bot.New()
+	tgBot := bot.New(cfg.Telegram.Apikey, cfg.Telegram.ChatID)
 	defer tgBot.Close(ctx)
 
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
+
 	// HLA services
-	hlaService := hla.NewHLA()
-	user, err := hlaService.Login()
-	if err != nil {
-		log.Fatalf("Error logging in: %v", err)
+	hla := hlaservice.New(
+		client,
+		cfg.HLA.BaseURL,
+		cfg.HLA.Username,
+		cfg.HLA.Password,
+		tgBot.SendNotification,
+	)
+
+	if err := hla.Run(ctx, cfg.HLA.HealthCentreIDList, cfg.HLA.SpecialtyIDList); err != nil {
+		log.Default().Printf("Error running HLA service: %v", err)
 	}
 
-	specialtyIDList := os.Getenv("HLA_SPECIALTY_ID_LIST")
-	// Check availability for each specialty
-	for s := range strings.SplitSeq(specialtyIDList, ",") {
-		// wait for each request to avoid rate limiting
-		time.Sleep(5 * time.Second)
-
-		specialtyId, err := strconv.Atoi(s)
-		if err != nil {
-			log.Fatalf("Error converting specialty ID: %v", err)
-		}
-
-		avail, err := hlaService.AvailabilityCheck(user.Token, specialtyId)
-		if err != nil {
-			log.Fatalf("Error checking availability: %v", err)
-		}
-
-		msgHLA := "HLA: No appointment available for specialty ID: " + s
-		if len(avail) > 0 {
-			msgHLA = "HLA: Appointment available for specialty ID: " + s
-			for _, a := range avail {
-				msgHLA += "\n" + a.DateTime + " " + a.FormatName + " " + a.DoctorName + " " + a.LocationName + " " + a.ConsultationName
-			}
-		}
-
-		// Send message to telegram
-		tgBot.SendNotification(ctx, msgHLA)
-	}
-
-	hcURL := os.Getenv("HC_URL")
-	if hcURL != "" {
-		// HC services
-		msgHC, err := services.GetHCAvailablePeople(ctx, hcURL)
-		if err != nil {
-			log.Fatalf("Error getting content: %v", err)
-		}
-		tgBot.SendNotification(ctx, msgHC)
+	hc := hcservice.New(
+		cfg.HC.URL,
+		tgBot.SendNotification,
+	)
+	if err := hc.Run(ctx); err != nil {
+		log.Default().Printf("Error running HC service: %v", err)
 	}
 }
