@@ -45,7 +45,7 @@ func main() {
 		cfg.HC.URL,
 		tgBot.SendNotification,
 	)
-	if err := hc.Run(ctx); err != nil {
+	if err := hc.Run(ctx, cfg.HC.HealthCentreIDList, cfg.HC.SpecialtyIDList); err != nil {
 		log.Default().Printf("Error running HC service: %v", err)
 	}
 }

@@ -21,9 +21,9 @@ type Config struct {
 		ChatID int64  `env:"TG_BOT_MASTERID"`
 	}
 	HC struct {
-		URL                string `env:"HC_URL"`
-		HealthCentreIDList []int  `env:"HC_HEALTH_CENTRE_ID_LIST"`
-		SpecialtyIDList    []int  `env:"HC_SPECIALTY_ID_LIST"`
+		URL                string   `env:"HC_URL"`
+		HealthCentreIDList []string `env:"HC_HEALTH_CENTRE_ID_LIST"`
+		SpecialtyIDList    []string `env:"HC_SPECIALTY_ID_LIST"`
 	}
 }
 
