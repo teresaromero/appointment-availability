@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type sendNotificationFn func(ctx context.Context, msg string)
@@ -44,12 +46,20 @@ func (h *HLA) Run(ctx context.Context, healthcenterIDList, specialtyIDList []int
 		return fmt.Errorf("Error logging in: %v", err)
 	}
 
+	group, ctx := errgroup.WithContext(ctx)
+	group.SetLimit(5)
 	for _, healthcenter := range healthcenterIDList {
 		for _, specialtyID := range specialtyIDList {
-			if err := h.runJob(ctx, user.Token, healthcenter, specialtyID); err != nil {
-				return err
-			}
+			group.Go(func() error {
+				if err := h.runJob(ctx, user.Token, healthcenter, specialtyID); err != nil {
+					return err
+				}
+				return nil
+			})
 		}
+	}
+	if err := group.Wait(); err != nil {
+		log.Default().Println("HLA: error running job", err)
 	}
 	return nil
 }
