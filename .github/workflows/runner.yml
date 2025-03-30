@@ -13,15 +13,14 @@ jobs:
       - name: Run Docker Container
         run: |
           docker run \
-            --env HLA_PROVINCE_ID=${{secrets.HLA_PROVINCE_ID}} \
-            --env HLA_HEALTH_CENTRE_ID=${{secrets.HLA_HEALTH_CENTRE_ID}} \
-            --env HLA_AGREEMENT_ID=${{secrets.HLA_AGREEMENT_ID}} \
+            --env HLA_HEALTH_CENTRE_ID_LIST=${{secrets.HLA_HEALTH_CENTRE_ID_LIST}} \
             --env HLA_BASE_URL=${{secrets.HLA_BASE_URL}} \
-            --env HLA_FORMAT_ID=${{secrets.HLA_FORMAT_ID}} \
             --env HLA_SPECIALTY_ID_LIST=${{secrets.HLA_SPECIALTY_ID_LIST}} \
             --env HLA_USERNAME=${{secrets.HLA_USERNAME}} \
             --env HLA_PASSWORD=${{secrets.HLA_PASSWORD}} \
             --env TG_BOT_APIKEY=${{secrets.TG_BOT_APIKEY}} \
             --env TG_BOT_MASTERID=${{secrets.TG_BOT_MASTERID}} \
             --env HC_URL=${{secrets.HC_URL}} \
+            --env HC_SPECIALTY_ID_LIST=${{secrets.HC_SPECIALTY_ID_LIST}} \
+            --env HC_HEALTH_CENTRE_ID_LIST=${{secrets.HC_HEALTH_CENTRE_ID_LIST}} \
             teresaromero/appointment-availability:latest
