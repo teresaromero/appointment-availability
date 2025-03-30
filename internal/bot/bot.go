@@ -8,12 +8,23 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
+type botInterface interface {
+	SendMessage(ctx context.Context, params *tgBot.SendMessageParams) (*models.Message, error)
+	Close(ctx context.Context) (bool, error)
+}
+
 type AppointmentBot struct {
-	bot      *tgBot.Bot
+	bot      botInterface
 	masterID int64
 }
 
 func New(apikey string, chatID int64) *AppointmentBot {
+	if apikey == "" {
+		return &AppointmentBot{
+			bot:      &NoopBot{},
+			masterID: chatID,
+		}
+	}
 	middleware := func(next tgBot.HandlerFunc) tgBot.HandlerFunc {
 		return func(ctx context.Context, b *tgBot.Bot, update *models.Update) {
 			if update.Message.From.ID != chatID ||
