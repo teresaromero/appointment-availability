@@ -73,11 +73,11 @@ func (h *HLA) runJob(ctx context.Context, token string, healthcenter, specialtyI
 		return fmt.Errorf("Error checking availability: %v", err)
 	}
 
-	msgHLA := "HLA: No appointment available for specialty ID: " + fmt.Sprintf("%d", specialtyID)
+	msgHLA := "🔴 HLA: No appointment available for specialty ID: " + fmt.Sprintf("%d", specialtyID)
 	if len(data) > 0 {
-		msgHLA = "HLA: Appointment available for specialty ID: " + fmt.Sprintf("%d", specialtyID)
+		msgHLA = "🎉 HLA: Appointment available for specialty ID: " + fmt.Sprintf("%d", specialtyID)
 		for _, a := range data {
-			msgHLA += "\n" + a.DateTime + " " + a.FormatName + " " + a.DoctorName + " " + a.LocationName + " " + a.ConsultationName
+			msgHLA += "\n >> " + a.DateTime + " " + a.FormatName + " " + a.DoctorName + " " + a.LocationName + " " + a.ConsultationName
 		}
 	}
 	h.notifierFn(ctx, msgHLA)
