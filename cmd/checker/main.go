@@ -12,13 +12,12 @@ import (
 )
 
 func main() {
-
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
 	tgBot := bot.New(cfg.Telegram.Apikey, cfg.Telegram.ChatID)
@@ -36,13 +35,12 @@ func main() {
 		cfg.HLA.Password,
 		tgBot.SendNotification,
 	)
-
 	if err := hla.Run(ctx, cfg.HLA.HealthCentreIDList, cfg.HLA.SpecialtyIDList); err != nil {
 		log.Default().Printf("Error running HLA service: %v", err)
 	}
 
 	hc := hcservice.New(
-		cfg.HC.URL,
+		cfg.HC.BaseURL,
 		tgBot.SendNotification,
 	)
 	if err := hc.Run(ctx, cfg.HC.HealthCentreIDList, cfg.HC.SpecialtyIDList); err != nil {
